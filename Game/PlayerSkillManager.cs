@@ -99,10 +99,11 @@ public class PlayerSkillManager : MonoBehaviour
     {
         GameObject createdObject = Instantiate(skillObjectPrefabs, skillQueue);
         SkillObject_00 newSkillObject = createdObject.AddComponent<SkillObject_00>();
-        skillObjects.Add(newSkillObject);
 
         //スキルのデータセット
         newSkillObject.setAll(invoker, target, r.cutInManager, r.tileManager);
+
+        skillObjects.Add(newSkillObject);
     }
     public void CheckSkillCutIn_00(int invoker, int target)
     {
@@ -137,8 +138,6 @@ public class PlayerSkillManager : MonoBehaviour
     {
         Destroy(skillObjects[executedSkillIndex].gameObject);
         skillObjects.RemoveAt(executedSkillIndex);
-
-        CheckTermsAndPlay();
     }
 
 }

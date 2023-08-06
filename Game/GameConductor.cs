@@ -11,7 +11,11 @@ public class GameConductor : MonoBehaviourPunCallbacks
     private int inputTurnUserId = 0;
 
     private ExitGames.Client.Photon.Hashtable myHash = new ExitGames.Client.Photon.Hashtable();
-    private ExitGames.Client.Photon.Hashtable[] otherPlayer = new ExitGames.Client.Photon.Hashtable[GameConfigData.MaxPlayers];
+
+    /// <summary>
+    /// 全プレイヤーのデータハッシュ値
+    /// </summary>
+    private ExitGames.Client.Photon.Hashtable[] allHash = new ExitGames.Client.Photon.Hashtable[GameConfigData.MaxPlayers];
 
     private double inputStartTime;
     private int executedSkillIndex = 0;
@@ -28,7 +32,7 @@ public class GameConductor : MonoBehaviourPunCallbacks
         r.canvasManager.SetCanvas(CanvasName.Loading);
 
         //自身のデータをカスタムプロパティに設定
-        myHash["UserDataId"] = PlayerData.UserDataObjectId;
+        myHash["UserDataId"] = PlayerData.BasicUserDataObjectID;
         myHash["Skill"] = GameData.SkillId;
         PhotonNetwork.LocalPlayer.SetCustomProperties(myHash);
 
@@ -36,20 +40,21 @@ public class GameConductor : MonoBehaviourPunCallbacks
         StartCoroutine(nameof(WaitingPhaseControll));
     }
 
+    /// <summary>
+    /// 全員が次の状態に移行できる準備が整っているか判定する
+    /// </summary>
     private bool IsAllPlayersReady(byte n)
     {
-        ////全員が次の状態に移行できる準備が整っているか判定する
-
         //Stateが設定されいるか確認
         for (int i = 0; i < GameConfigData.MaxPlayers; ++i)
         {
-            otherPlayer[i] = PhotonNetwork.PlayerList[i].CustomProperties;
+            allHash[i] = PhotonNetwork.PlayerList[i].CustomProperties;
 
-            if (otherPlayer[i] == null) //設定されていない
+            if (allHash[i] == null) //設定されていない
             {
                 return false;
             }
-            else if (!otherPlayer[i].ContainsKey("State")) //設定はされているがStateがない
+            else if (!allHash[i].ContainsKey("State")) //設定はされているがStateがない
             {
                 return false;
             }
@@ -59,7 +64,7 @@ public class GameConductor : MonoBehaviourPunCallbacks
 
         for (int i = 0; i < GameConfigData.MaxPlayers; ++i)
         {
-            byte otherstate = (byte)otherPlayer[i]["State"];
+            byte otherstate = (byte)allHash[i]["State"];
 
             if (otherstate == n)
             {
@@ -70,13 +75,6 @@ public class GameConductor : MonoBehaviourPunCallbacks
         if (equalStateCount == GameConfigData.MaxPlayers) return true;
         else return false;
     }
-
-    //他プレイヤーのカスタムプロパティ参照
-    //public override void OnPlayerPropertiesUpdate(Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps)
-    //{
-    //    int targetId = GameData.Id[targetPlayer.ActorNumber];
-    //    otherPlayer[targetId] = changedProps;
-    //}
 
     [PunRPC]
     private void SetAllPlayersDataAndInputPhaseStart()
@@ -91,7 +89,7 @@ public class GameConductor : MonoBehaviourPunCallbacks
     [PunRPC]
     private void CheckUserData()
     {
-        if(isAllPlayersReadyForStart)
+        if (isAllPlayersReadyForStart)
         {
             myState = (byte)GamePhase.WaitingAllReady;
             myHash["State"] = myState;
@@ -161,7 +159,7 @@ public class GameConductor : MonoBehaviourPunCallbacks
         switch (myState)
         {
             case (byte)GamePhase.Waiting:
-                
+
 
             case (byte)GamePhase.Input:
                 if (PhotonNetwork.IsMasterClient)
@@ -225,7 +223,7 @@ public class GameConductor : MonoBehaviourPunCallbacks
                 photonView.RPC(nameof(InputPhaseStart), RpcTarget.All);
             }
         }
-        
+
         yield break;
     }
 
@@ -241,7 +239,7 @@ public class GameConductor : MonoBehaviourPunCallbacks
 
         //少し待つ
         yield return new WaitForSeconds(1f);
-        
+
         //入力終了
         myState = (byte)GamePhase.InputEnd;
         myHash["State"] = myState;
@@ -262,7 +260,7 @@ public class GameConductor : MonoBehaviourPunCallbacks
 
         //カメラ移動時間待つ
         //yield return new WaitForSeconds(1.5f);
-        
+
 
         //全員が準備できるまで待つ
         yield return new WaitUntil(() => IsAllPlayersReady((byte)GamePhase.CountEnd));
@@ -308,7 +306,7 @@ public class GameConductor : MonoBehaviourPunCallbacks
             yield return new WaitUntil(() => IsAllPlayersReady((byte)GamePhase.CountEnd));
 
             //SkillPhase開始(inputTurnUserIdが初期化済みなら)
-            if(inputTurnUserId == 0)
+            if (inputTurnUserId == 0)
             {
                 photonView.RPC(nameof(SkillPhaseStart), RpcTarget.All);
             }
@@ -351,10 +349,10 @@ public class GameConductor : MonoBehaviourPunCallbacks
     {
         int readyPlayersCount = 0;
 
-        for(int i = 0; i < GameConfigData.MaxPlayers; ++i)
+        for (int i = 0; i < GameConfigData.MaxPlayers; ++i)
         {
-            otherPlayer[i] = PhotonNetwork.PlayerList[i].CustomProperties;
-            if (otherPlayer[i].ContainsKey("UserDataId"))
+            allHash[i] = PhotonNetwork.PlayerList[i].CustomProperties;
+            if (allHash[i].ContainsKey("UserDataId"))
             {
                 readyPlayersCount += 1;
             }

@@ -6,8 +6,8 @@ using Photon.Pun;
 
 public static class PlayerData
 {
-    //NCMBデータストア[UserData]に登録した自身のObjectId
-    public static string UserDataObjectId;
+    //NCMBデータストア[BasicUserDataObjectID]に登録した自身のObjectId
+    public static string BasicUserDataObjectID;
 
     //NCMBデータストアに設定されたプレイヤー名
     public static string PlayerName;

@@ -11,16 +11,16 @@ public class PlayerDataManager : MonoBehaviour
     void Awake()
     {
         //ObjectIDの設定
-        PlayerData.UserDataObjectId = (string)NCMBUser.CurrentUser["UserDataID"];
+        PlayerData.BasicUserDataObjectID = (string)NCMBUser.CurrentUser["BasicUserDataObjectID"];
 
         //ObjectIDからプレイヤーのデータを設定
-        NCMBObject fetchUserData = new NCMBObject("UserData");
-        fetchUserData.ObjectId = PlayerData.UserDataObjectId;
-        fetchUserData.FetchAsync((NCMBException e) =>
+        NCMBObject fetchData = new NCMBObject("BasicUserData");
+        fetchData.ObjectId = PlayerData.BasicUserDataObjectID;
+        fetchData.FetchAsync((NCMBException e) =>
         {
             if (e == null)
             {
-                PlayerData.PlayerName = (string)fetchUserData["UserName"];
+                PlayerData.PlayerName = (string)fetchData["NAME"];
 
                 homeCanvasManager.OnCompleteFetchUserData();
             }

@@ -12,6 +12,7 @@ public class LoginManager : MonoBehaviourPunCallbacks
     private bool isSignIn = false;
     private string userDataObjectId;
 
+    [SerializeField] private SaveDataManager saveDataManager;
     [SerializeField] private SceneChanger sceneChanger;
     [SerializeField] private TextMeshProUGUI statusText;
 
@@ -46,10 +47,10 @@ public class LoginManager : MonoBehaviourPunCallbacks
     private void SignIn()
     {
         //サインイン
-        if (PlayerPrefs.HasKey("UserName"))
+        if (saveDataManager.saveData.UserName != "DefaultUserName")
         {
             statusText.text = "サインイン中";
-            NCMBUser.LogInAsync(PlayerPrefs.GetString("UserName"), PlayerPrefs.GetString("Password"), (NCMBException e) =>
+            NCMBUser.LogInAsync(saveDataManager.saveData.UserName, saveDataManager.saveData.Password, (NCMBException e) =>
             {
                 if (e == null)
                 {
@@ -65,43 +66,32 @@ public class LoginManager : MonoBehaviourPunCallbacks
         }
     }
 
-    private void LogIn()
-    {
-        //ログイン
-        NCMBUser.LogInAsync(PlayerPrefs.GetString("UserName"), PlayerPrefs.GetString("Password"), (NCMBException e) =>
-        {
-            if (e == null)
-            {
-                isSignIn = true;
-                AddNewUserData();
-            }
-        });
-    }
-
     private void SignUp()
     {
         //サインアップ
         NCMBUser newUser = new NCMBUser();
-        newUser.UserName = string.Format("Player{0:D4}{1}{2}{3}", UnityEngine.Random.Range(0, 9999), DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second);
+        newUser.UserName = string.Format("GuestPlayer{0:D4}{1}{2}{3}", UnityEngine.Random.Range(0, 9999), DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second);
         newUser.Password = string.Format("92ssw0r6{0:D4}", UnityEngine.Random.Range(0, 9999));
 
         newUser.SignUpAsync((NCMBException e) =>
         {
-            if(e == null)
+            if (e != null)
+            {
+                Debug.Log("Error:SignUp Failed");
+            }
+            else
             {
                 //登録完了
-                NCMBObject userData = new NCMBObject("UserData");
-                userData.Add("UserName", newUser.UserName);
-                userData.Add("Password", newUser.Password);
-                userData.SaveAsync((NCMBException er) =>
+                saveDataManager.saveData.UserName = newUser.UserName;
+                saveDataManager.saveData.Password = newUser.Password;
+                saveDataManager.Save();
+
+                NCMBUser.LogInAsync(newUser.UserName, newUser.Password, (NCMBException er) =>
                 {
-                    if(er == null)
+                    if (er == null)
                     {
-                        userDataObjectId = userData.ObjectId;
-                        PlayerPrefs.SetString("UserName", newUser.UserName);
-                        PlayerPrefs.SetString("Password", newUser.Password);
-                        PlayerPrefs.Save();
-                        LogIn();
+                        isSignIn = true;
+                        AddNewUserData();
                     }
                 });
             }
@@ -114,8 +104,27 @@ public class LoginManager : MonoBehaviourPunCallbacks
         NCMBUser currentUser = NCMBUser.CurrentUser;
         if(currentUser != null)
         {
-            currentUser.Add("UserDataID", userDataObjectId);
-            currentUser.SaveAsync((NCMBException e) => { });
+            NCMBObject basicUserData = new NCMBObject("BasicUserData");
+            basicUserData.Add("NAME", "DefaultName");
+            basicUserData.Add("LEVEL", 1);
+            basicUserData.Add("EXP", 0);
+            basicUserData.SaveAsync((NCMBException er) =>
+            {
+                if (er != null)
+                {
+                    Debug.Log("Error:BasicUserData Save Failed");
+                }
+                else 
+                {
+                    currentUser.Add("BasicUserDataObjectID", basicUserData.ObjectId);
+                    currentUser.SaveAsync((NCMBException e) => {
+                        if( e != null )
+                        {
+                            Debug.Log("Error:BasicUserDataObjectID Save Failed");
+                        }
+                    });
+                }
+            });
         }
         
     }
