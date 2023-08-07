@@ -4,7 +4,7 @@ using UnityEngine;
 
 public static class GameConfigData
 {
-    public static int MaxPlayers = 2;
+    public static int MaxPlayers = 1;
     public static int MaxTurn = 10;
     public static double MaxInputPhaseTime = 30;
     public static int DefaultResidue = 10;

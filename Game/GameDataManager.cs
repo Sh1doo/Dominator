@@ -7,9 +7,6 @@ using NCMB;
 
 public class GameDataManager : MonoBehaviour
 {
-
-    [SerializeField] GameCanvasManager gameCanvas;
-
     //UserDataを設定した回数
     private int setUserDataCount = 0;
 
@@ -21,9 +18,11 @@ public class GameDataManager : MonoBehaviour
         SetId();
     }
 
+    /// <summary>
+    /// PlayerListの順番でIDを設定する
+    /// </summary>
     private void SetId()
     {
-        //PlayerListの順番でIDを設定する
         for (int i = 0; i < PhotonNetwork.PlayerList.Length; ++i)
         {
             GameData.Id.Add(PhotonNetwork.PlayerList[i].ActorNumber, i);
@@ -35,18 +34,20 @@ public class GameDataManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// userIdのCustomPropertyに基づいてGameData.UserDataに登録
+    /// </summary>
+    /// <param name="userId"></param>
     public void SetUserData(int userId)
     {
-        //指定されたActorNumberのプレイヤーのNCMB["UserData"]をGameDataのUserDataに設定する
-
-        NCMBObject fetchUserData = new NCMBObject("UserData");
-        fetchUserData.ObjectId = (string)PhotonNetwork.PlayerList[userId].CustomProperties["UserDataId"];
-        fetchUserData.FetchAsync((NCMBException e) =>
+        NCMBObject fetchData = new NCMBObject("BasicUserData");
+        fetchData.ObjectId = (string)PhotonNetwork.PlayerList[userId].CustomProperties["BasicUserData"];
+        fetchData.FetchAsync((NCMBException e) =>
         {
             if (e == null)
             {
                 Hashtable hashtable = new Hashtable();
-                hashtable.Add("PlayerName", (string)fetchUserData["UserName"]);
+                hashtable.Add("PlayerName", (string)fetchData["NAME"]);
                 GameData.UserData[userId] = hashtable;
 
                 setUserDataCount += 1;

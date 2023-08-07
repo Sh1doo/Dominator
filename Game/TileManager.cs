@@ -14,7 +14,7 @@ public class TileManager : MonoBehaviour
 
     public Dictionary<int, int> thisRoundPoint = new Dictionary<int,int>();
 
-    [SerializeField] private UnityEvent setRoundPointEndCallback;
+    [SerializeField] private GameConductor gameConductor;
 
     private PhotonView photonView;
 
@@ -42,7 +42,7 @@ public class TileManager : MonoBehaviour
             thisRoundPoint[tileId] = 0;
         }
         //タイルデータの送信が終了した
-        setRoundPointEndCallback.Invoke();
+        StartCoroutine(gameConductor.CountWaiting());
     }
 
     public void AddThisRoundPoint(int position, int point)

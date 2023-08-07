@@ -7,6 +7,10 @@ public class CanvasManager : MonoBehaviour
 
     [SerializeField] Canvas[] canvas;
 
+    /// <summary>
+    /// Canvasの切り替え
+    /// </summary>
+    /// <param name="canvasName"></param>
     public void SetCanvas(CanvasName canvasName)
     {
         for(int i = 0; i < canvas.Length; ++i)

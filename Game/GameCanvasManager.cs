@@ -22,7 +22,9 @@ public class GameCanvasManager : MonoBehaviour
     private int lookingPlayer = 0;
     private bool colorButtonActivation = true;
 
-    //ゲーム開始時アニメーション
+    /// <summary>
+    /// ゲーム開始時アニメーション
+    /// </summary>
     public void DoAnimation_GameStartInit()
     {
         lookingPlayer = GameData.UserId;

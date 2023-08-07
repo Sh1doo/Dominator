@@ -46,7 +46,6 @@ public class LoginManager : MonoBehaviourPunCallbacks
 
     private void SignIn()
     {
-        //サインイン
         if (saveDataManager.saveData.UserName != "DefaultUserName")
         {
             statusText.text = "サインイン中";
